@@ -1,4 +1,4 @@
-import type { ObjectSize } from '../../models/object3d'
+import type { ObjectSize } from '../models/object3d'
 
 export function sizeToScale(size: ObjectSize): number {
     switch (size) {

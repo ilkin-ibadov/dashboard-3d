@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist, subscribeWithSelector } from 'zustand/middleware'
 import type { SceneObject } from '../models/object3d'
 import { objectsApi } from '../api/mockApi'
+import { __internal } from '../api/mockApi'
 
 export interface ObjectsState {
   objects: SceneObject[]
@@ -26,8 +27,12 @@ export const useObjectsStore = create<ObjectsState>()(
 
       load: async () => {
         set({ isLoading: true })
-        // const data = await objectsApi.getAll()
-        set({ objects: get().objects, isLoading: false })
+        const persistedObjects = get().objects
+
+        // sync fake API with persisted Zustand
+        __internal.setObjects(persistedObjects)
+
+        set({ isLoading: false })
       },
 
       add: async (data) => {
@@ -61,8 +66,15 @@ export const useObjectsStore = create<ObjectsState>()(
     {
       name: 'objects-store',
       partialize: (state) => ({
-        objects: state.objects,
+        objects: state.objects.filter(
+          (o) => o.type !== 'custom'
+        ),
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.objects) {
+          __internal.setObjects(state.objects)
+        }
+      },
     }
   )
   ))

@@ -4,7 +4,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { useGLTF, useKeyboardControls } from '@react-three/drei'
 import type { SceneObject } from '../../models/object3d'
 import { useObjectsStore } from '../../store/objects.store'
-import { sizeToScale } from './objectSize'
+import { sizeToScale } from '../../utils/objectSize'
 import { Controls } from '../../hooks/useEditorKeyboard'
 
 interface Props {
@@ -15,14 +15,13 @@ export function SceneObjectComponent({ object }: Props) {
   const [sub, get] = useKeyboardControls<Controls>()
   const groupRef = useRef<Group>(null!)
   const [hovered, setHovered] = useState(false)
-  // const [dragging, setDragging] = useState(false)
 
   const { select, selectedId, update, draggingId, setDragging } = useObjectsStore()
   const isDragging = draggingId === object.id
   const isSelected = selectedId === object.id
 
-  /* ---------------- dragging ---------------- */
 
+  // dragging behaviour
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
     select(object.id)
@@ -40,7 +39,7 @@ export function SceneObjectComponent({ object }: Props) {
     const state = get()
     const isKeyboardActive = state.forward || state.back || state.left || state.right
 
-    if (isKeyboardActive) return // skip drag while arrow keys are pressed
+    if (isKeyboardActive) return // skips drag while arrow keys are pressed
 
     e.stopPropagation()
     update(object.id, {
@@ -48,15 +47,13 @@ export function SceneObjectComponent({ object }: Props) {
     })
   }
 
-
-  /* ---------------- custom model ---------------- */
-
+  // when external 3d model is uploaded
   if (object.type === 'custom') {
     if (!object.modelBase64) return null
 
     const { scene } = useGLTF(object.modelBase64)
 
-    // Apply hover / select color to ALL meshes
+    // Apply hover/select color for uploaded models
     useEffect(() => {
       scene.traverse((child: any) => {
         if (child.isMesh && child.material) {
@@ -84,8 +81,7 @@ export function SceneObjectComponent({ object }: Props) {
     )
   }
 
-  /* ---------------- primitive objects ---------------- */
-
+  // Default cube
   return (
     <mesh
       position={object.position}
@@ -96,13 +92,7 @@ export function SceneObjectComponent({ object }: Props) {
       onPointerUp={handlePointerUp}
       onPointerMove={handlePointerMove}
     >
-      {object.type === 'sphere' && <sphereGeometry args={[0.5, 32, 32]} />}
-      {object.type === 'cone' && <coneGeometry args={[0.5, 1, 32]} />}
-      {object.type === 'cylinder' && (
-        <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
-      )}
       {object.type === 'box' && <boxGeometry />}
-
       <meshStandardMaterial
         color={isSelected ? 'orange' : hovered ? 'hotpink' : object.color}
       />

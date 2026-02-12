@@ -7,8 +7,9 @@ import { useFrame } from '@react-three/fiber'
 import { useKeyboardControls } from '@react-three/drei'
 import { Controls } from '../../hooks/useEditorKeyboard'
 import { useEffect, useRef } from 'react'
+import { Vector3 } from 'three'
 
-const MOVE_STEP = 0.25
+const MOVE_STEP = 0.2
 
 function ClickPlane() {
   const [sub, get] = useKeyboardControls<Controls>()
@@ -34,28 +35,37 @@ function ClickPlane() {
   }
 
   // arrow keys movement
-  useFrame(() => {
+  useFrame(({ camera }) => {
     if (!selectedId) return
-
     const obj = objects.find((o) => o.id === selectedId)
     if (!obj) return
 
     const state = get()
     const isKeyboardActive = state.forward || state.back || state.left || state.right
+    if (!isKeyboardActive || draggingId === selectedId) return
 
-    // skip keyboard movement if dragging
-    if (draggingId === selectedId) return
+    // camera-relative axes
+    const camForward = new Vector3()
+    camera.getWorldDirection(camForward)
+    camForward.y = 0
+    camForward.normalize()
 
-    if (isKeyboardActive) {
-      const [x, y, z] = obj.position
-      update(selectedId, {
-        position: [
-          x + (state.right ? MOVE_STEP : 0) - (state.left ? MOVE_STEP : 0),
-          y,
-          z + (state.back ? MOVE_STEP : 0) - (state.forward ? MOVE_STEP : 0),
-        ] as [number, number, number],
-      })
-    }
+    const camRight = new Vector3()
+    camRight.crossVectors(camForward, camera.up).normalize()
+
+    const moveDelta = new Vector3()
+    if (state.forward) moveDelta.add(camForward)
+    if (state.back) moveDelta.sub(camForward)
+    if (state.right) moveDelta.add(camRight)
+    if (state.left) moveDelta.sub(camRight)
+    moveDelta.multiplyScalar(MOVE_STEP)
+
+    const newPos: [number, number, number] = [
+      obj.position[0] + moveDelta.x,
+      obj.position[1] + moveDelta.y,
+      obj.position[2] + moveDelta.z,
+    ]
+    update(selectedId, { position: newPos })
   })
 
   useEffect(() => {

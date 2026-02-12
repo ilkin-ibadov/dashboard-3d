@@ -16,14 +16,14 @@ export function DesignerList() {
         return <p className="p-4 text-gray-500">No designers added yet</p>
     }
 
-    // Compute attached objects count dynamically
+    // Update attached objects count
     const designersWithCount = designers.map((d) => {
         const count = objects.filter((o) => o.designerId === d.id).length
         return { ...d, attachedObjectsCount: count }
     })
 
     return (
-        <ul className="space-y-2 p-4">
+        <ul className="space-y-2">
             {designersWithCount.map((d) => (
                 <li
                     key={d.id}
@@ -36,7 +36,7 @@ export function DesignerList() {
                         </div>
                     </div>
                     <div className='flex items-center gap-3'>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-sm text-gray-600">
                             Attached objects: {d.attachedObjectsCount}
                         </div>
                         <DeleteDesignerButton selectedId={d.id} />

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useObjectsStore } from '../../store/objects.store'
 import { useDesignersStore } from '../../store/designers.store'
+import { FileInput } from './FileInput'
 
 export function ModelUploader() {
     const addObject = useObjectsStore((s) => s.add)
@@ -10,10 +11,7 @@ export function ModelUploader() {
         designers[0]?.id || null
     )
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0) return
-        const file = e.target.files[0]
-
+    const handleFileUpload = async (file: File) => {
         if (!file.name.endsWith('.glb') && !file.name.endsWith('.gltf')) {
             setError('Only .glb or .gltf files are allowed')
             return
@@ -28,7 +26,6 @@ export function ModelUploader() {
 
         reader.onload = async () => {
             const base64 = reader.result as string
-
             await addObject({
                 name: file.name,
                 designerId: selectedDesigner,
@@ -38,16 +35,14 @@ export function ModelUploader() {
                 type: 'custom',
                 modelBase64: base64,
             })
-
             setError(null)
         }
 
-        reader.onerror = () => {
-            setError('Failed to read file')
-        }
+        reader.onerror = () => setError('Failed to read file')
 
         reader.readAsDataURL(file)
     }
+
 
     return (
         <div className="p-2 space-y-2 border rounded bg-white">
@@ -65,12 +60,9 @@ export function ModelUploader() {
                 ))}
             </select>
 
-            <input
-                type="file"
-                accept=".glb,.gltf"
-                onChange={handleFileUpload}
-                className="mt-2 w-full p-2 bg-slate-300 rounded"
-            />
+            <FileInput onFileSelect={handleFileUpload} />
+
+            <p className='text-xs text-center text-zinc-500'>Uploaded models does not persist state</p>
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
         </div>

@@ -39,29 +39,36 @@ export function DesignerForm() {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 p-4 border rounded bg-white">
             <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
                     Full Name
                 </label>
                 <input
+                    id="fullName"
                     {...register('fullName')}
-                    className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    aria-invalid={!!errors.fullName}
+                    aria-describedby={errors.fullName ? "fullName-error" : undefined}
+                    placeholder="Enter designer full name"
+                    className="mt-1 block w-full rounded border border-gray-400 p-2 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 />
                 {errors.fullName && (
-                    <p className="text-red-500 text-sm">{errors.fullName.message}</p>
+                    <p id="fullName-error" className="text-red-500 text-sm">{errors.fullName.message}</p>
                 )}
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label htmlFor="workingHours" className="block text-sm font-medium text-gray-700">
                     Working Hours
                 </label>
                 <input
+                    id="workingHours"
                     type="number"
                     {...register('workingHours', { valueAsNumber: true })}
+                    aria-invalid={!!errors.workingHours}
+                    aria-describedby={errors.workingHours ? "workingHours-error" : undefined}
                     className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 />
                 {errors.workingHours && (
-                    <p className="text-red-500 text-sm">{errors.workingHours.message}</p>
+                    <p id="workingHours-error" className="text-red-500 text-sm">{errors.workingHours.message}</p>
                 )}
             </div>
 

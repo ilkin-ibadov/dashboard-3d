@@ -8,6 +8,15 @@ let objects: SceneObject[] = []
 const delay = (ms = 200) =>
     new Promise((resolve) => setTimeout(resolve, ms))
 
+export const __internal = {
+    setObjects(data: SceneObject[]) {
+        objects = [...data]
+    },
+    setDesigners(data: Designer[]) {
+        designers = [...data]
+    },
+}
+
 export const designersApi = {
     async getAll(): Promise<Designer[]> {
         await delay()
@@ -56,6 +65,7 @@ export const objectsApi = {
         objects[index] = {
             ...objects[index],
             ...data,
+            id
         }
 
         return objects[index]
