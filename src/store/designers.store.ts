@@ -8,6 +8,7 @@ interface DesignersState {
     isLoading: boolean
     load: () => Promise<void>
     add: (data: Omit<Designer, 'id'>) => Promise<void>
+    remove: (id: string) => void
 }
 
 export const useDesignersStore = create<DesignersState>()(
@@ -27,6 +28,12 @@ export const useDesignersStore = create<DesignersState>()(
             add: async (data) => {
                 const designer = await designersApi.create(data)
                 set({ designers: [...get().designers, designer] })
+            },
+
+            remove: (id: string) => {
+                set((state) => ({
+                    designers: state.designers.filter((o) => o.id !== id)
+                }))
             },
         }),
         {

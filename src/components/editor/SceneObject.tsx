@@ -1,58 +1,93 @@
-import { useRef, useState, type JSX } from 'react'
-import { Mesh } from 'three'
+import { useRef, useState, useEffect } from 'react'
+import { Group } from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
+import { useGLTF, useKeyboardControls } from '@react-three/drei'
 import type { SceneObject } from '../../models/object3d'
 import { useObjectsStore } from '../../store/objects.store'
 import { sizeToScale } from './objectSize'
-import { useGLTF } from '@react-three/drei'
+import { Controls } from '../../hooks/useEditorKeyboard'
 
 interface Props {
   object: SceneObject
 }
 
 export function SceneObjectComponent({ object }: Props) {
-  const meshRef = useRef<Mesh>(null!)
+  const [sub, get] = useKeyboardControls<Controls>()
+  const groupRef = useRef<Group>(null!)
   const [hovered, setHovered] = useState(false)
-  const [dragging, setDragging] = useState(false)
-  const { selectedId, select, update } = useObjectsStore()
+  // const [dragging, setDragging] = useState(false)
+
+  const { select, selectedId, update, draggingId, setDragging } = useObjectsStore()
+  const isDragging = draggingId === object.id
   const isSelected = selectedId === object.id
+
+  /* ---------------- dragging ---------------- */
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
     select(object.id)
-    setDragging(true)
+    setDragging(object.id)
   }
 
-  const handlePointerUp = () => setDragging(false)
-  const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
-    if (!dragging) return
+  const handlePointerUp = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
-    update(object.id, { position: [e.point.x, e.point.y, object.position[2]] })
+    setDragging(null)
   }
 
-  let geometry: JSX.Element
-  if (object.type === 'custom' && object.modelUrl) {
-    const { scene } = useGLTF(object.modelUrl)
-    geometry = <primitive object={scene} />
-  } else {
-    switch (object.type) {
-      case 'sphere':
-        geometry = <sphereGeometry args={[0.5, 32, 32]} />
-        break
-      case 'cone':
-        geometry = <coneGeometry args={[0.5, 1, 32]} />
-        break
-      case 'cylinder':
-        geometry = <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
-        break
-      default:
-        geometry = <boxGeometry />
-    }
+  const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
+    if (!isDragging) return
+
+    const state = get()
+    const isKeyboardActive = state.forward || state.back || state.left || state.right
+
+    if (isKeyboardActive) return // skip drag while arrow keys are pressed
+
+    e.stopPropagation()
+    update(object.id, {
+      position: [e.point.x, e.point.y, object.position[2]] as [number, number, number],
+    })
   }
+
+
+  /* ---------------- custom model ---------------- */
+
+  if (object.type === 'custom') {
+    if (!object.modelBase64) return null
+
+    const { scene } = useGLTF(object.modelBase64)
+
+    // Apply hover / select color to ALL meshes
+    useEffect(() => {
+      scene.traverse((child: any) => {
+        if (child.isMesh && child.material) {
+          child.material = child.material.clone()
+          child.material.color.set(
+            isSelected ? 'orange' : hovered ? 'hotpink' : object.color
+          )
+        }
+      })
+    }, [scene, hovered, isSelected, object.color])
+
+    return (
+      <group
+        ref={groupRef}
+        position={object.position}
+        scale={sizeToScale(object.size)}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerMove={handlePointerMove}
+      >
+        <primitive object={scene} />
+      </group>
+    )
+  }
+
+  /* ---------------- primitive objects ---------------- */
 
   return (
     <mesh
-      ref={meshRef}
       position={object.position}
       scale={sizeToScale(object.size)}
       onPointerOver={() => setHovered(true)}
@@ -61,7 +96,13 @@ export function SceneObjectComponent({ object }: Props) {
       onPointerUp={handlePointerUp}
       onPointerMove={handlePointerMove}
     >
-      {geometry}
+      {object.type === 'sphere' && <sphereGeometry args={[0.5, 32, 32]} />}
+      {object.type === 'cone' && <coneGeometry args={[0.5, 1, 32]} />}
+      {object.type === 'cylinder' && (
+        <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
+      )}
+      {object.type === 'box' && <boxGeometry />}
+
       <meshStandardMaterial
         color={isSelected ? 'orange' : hovered ? 'hotpink' : object.color}
       />

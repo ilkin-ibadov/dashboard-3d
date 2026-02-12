@@ -1,25 +1,28 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, subscribeWithSelector } from 'zustand/middleware'
 import type { SceneObject } from '../models/object3d'
 import { objectsApi } from '../api/mockApi'
 
-interface ObjectsState {
+export interface ObjectsState {
   objects: SceneObject[]
   selectedId: string | null
+  draggingId: string | null
   isLoading: boolean
-
   load: () => Promise<void>
   add: (data: Omit<SceneObject, 'id'>) => Promise<void>
   update: (id: string, data: Partial<SceneObject>) => Promise<void>
+  remove: (id: string) => void
+  setDragging: (id: string | null) => void
   select: (id: string | null) => void
 }
 
 export const useObjectsStore = create<ObjectsState>()(
-  persist(
+  subscribeWithSelector(persist(
     (set, get) => ({
       objects: [],
       selectedId: null,
       isLoading: false,
+      draggingId: null,
 
       load: async () => {
         set({ isLoading: true })
@@ -41,6 +44,16 @@ export const useObjectsStore = create<ObjectsState>()(
         })
       },
 
+      remove: (id: string) => {
+        set((state) => ({
+          objects: state.objects.filter((o) => o.id !== id),
+          selectedId: state.selectedId === id ? null : state.selectedId,
+          draggingId: get().draggingId === id ? null : get().draggingId,
+        }))
+      },
+
+      setDragging: (id: string | null) => set({ draggingId: id }),
+
       select: (id) => {
         set({ selectedId: id })
       },
@@ -52,4 +65,4 @@ export const useObjectsStore = create<ObjectsState>()(
       }),
     }
   )
-)
+  ))

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useDesignersStore } from '../../store/designers.store'
 import { useObjectsStore } from '../../store/objects.store'
+import { DeleteDesignerButton } from './DeleteDesignerButton'
 
 export function DesignerList() {
     const { designers, load: loadDesigners } = useDesignersStore()
@@ -34,8 +35,11 @@ export function DesignerList() {
                             {d.workingHours} hours
                         </div>
                     </div>
-                    <div className="text-sm text-gray-400">
-                        Attached objects: {d.attachedObjectsCount}
+                    <div className='flex items-center gap-3'>
+                        <div className="text-sm text-gray-400">
+                            Attached objects: {d.attachedObjectsCount}
+                        </div>
+                        <DeleteDesignerButton selectedId={d.id} />
                     </div>
                 </li>
             ))}

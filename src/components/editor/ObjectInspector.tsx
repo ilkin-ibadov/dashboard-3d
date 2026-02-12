@@ -49,7 +49,7 @@ export function ObjectInspector() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={handleUpdate}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded border border-gray-400 p-2 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         />
       </div>
 
@@ -61,7 +61,7 @@ export function ObjectInspector() {
           value={designerId || ''}
           onChange={(e) => setDesignerId(e.target.value)}
           onBlur={handleUpdate}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full p-2 rounded border border-gray-400 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         >
           {designers.map((d) => (
             <option key={d.id} value={d.id}>
@@ -96,7 +96,7 @@ export function ObjectInspector() {
             setSize(e.target.value as ObjectSize)
             handleUpdate()
           }}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full p-2 rounded border border-gray-400 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         >
           <option value="small">Small</option>
           <option value="normal">Normal</option>

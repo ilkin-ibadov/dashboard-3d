@@ -9,5 +9,5 @@ export interface SceneObject {
     position: [number, number, number]
     size: ObjectSize
     type: ObjectType
-    modelUrl?: string
+    modelBase64?: string
 }
