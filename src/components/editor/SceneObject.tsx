@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function SceneObjectComponent({ object }: Props) {
-  const [sub, get] = useKeyboardControls<Controls>()
+  const [, get] = useKeyboardControls<Controls>()
   const groupRef = useRef<Group>(null!)
   const [hovered, setHovered] = useState(false)
 
