@@ -3,9 +3,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useDesignersStore } from '../../store/designers.store'
 
+const workingHoursOptions = [
+    { label: '9 AM - 5 PM', value: '9-17' },
+    { label: '10 AM - 6 PM', value: '10-18' },
+    { label: '11 AM - 7 PM', value: '11-19' },
+    { label: '12 PM - 8 PM', value: '12-20' },
+]
+
 const designerSchema = z.object({
     fullName: z.string().min(2, 'Name must be at least 2 characters'),
-    workingHours: z.number().min(1).max(24, 'Hours must be 1-24'),
+    workingHours: z.enum(['9-17', '10-18', '11-19', '12-20']),
 })
 
 type DesignerFormValues = z.infer<typeof designerSchema>
@@ -22,15 +29,15 @@ export function DesignerForm() {
         resolver: zodResolver(designerSchema),
         defaultValues: {
             fullName: '',
-            workingHours: 8,
-        },
+            workingHours: '9-17',
+        }
     })
 
     const onSubmit = async (data: DesignerFormValues) => {
         // Provide attachedObjectsCount default
         await addDesigner({
             fullName: data.fullName,
-            workingHours: data.workingHours.toString(),
+            workingHours: data.workingHours,
             attachedObjectsCount: 0,
         })
         reset()
@@ -59,18 +66,24 @@ export function DesignerForm() {
                 <label htmlFor="workingHours" className="block text-sm font-medium text-gray-700">
                     Working Hours
                 </label>
-                <input
+                <select
                     id="workingHours"
-                    type="number"
-                    {...register('workingHours', { valueAsNumber: true })}
                     aria-invalid={!!errors.workingHours}
                     aria-describedby={errors.workingHours ? "workingHours-error" : undefined}
-                    className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                />
+                    {...register('workingHours')}
+                    className="mt-1 block w-full rounded border border-gray-400 p-2 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    {workingHoursOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
                 {errors.workingHours && (
-                    <p id="workingHours-error" className="text-red-500 text-sm">{errors.workingHours.message}</p>
+                    <p className="text-red-500 text-sm">{errors.workingHours.message}</p>
                 )}
             </div>
+
 
             <button
                 type="submit"

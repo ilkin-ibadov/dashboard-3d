@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Designer } from '../models/designer'
 import { designersApi } from '../api/mockApi'
+import { useObjectsStore } from './objects.store'
 
 interface DesignersState {
     designers: Designer[]
@@ -31,6 +32,14 @@ export const useDesignersStore = create<DesignersState>()(
             },
 
             remove: (id: string) => {
+                // Remove attached objects
+                const removeObjects = useObjectsStore.getState().remove
+                const objectsToRemove = useObjectsStore
+                    .getState()
+                    .objects.filter((o) => o.designerId === id)
+
+                objectsToRemove.forEach((o) => removeObjects(o.id))
+
                 set((state) => ({
                     designers: state.designers.filter((o) => o.id !== id)
                 }))

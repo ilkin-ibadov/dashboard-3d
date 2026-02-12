@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useDesignersStore } from '../../store/designers.store'
 import { useObjectsStore } from '../../store/objects.store'
 import { DeleteDesignerButton } from './DeleteDesignerButton'
+import { formatWorkingHours } from '../../utils/formatWorkingHours'
 
 export function DesignerList() {
     const { designers, load: loadDesigners } = useDesignersStore()
@@ -32,7 +33,7 @@ export function DesignerList() {
                     <div>
                         <div className="font-medium">{d.fullName}</div>
                         <div className="text-sm text-gray-500">
-                            {d.workingHours} hours
+                            {formatWorkingHours(d.workingHours)}
                         </div>
                     </div>
                     <div className='flex items-center gap-3'>
